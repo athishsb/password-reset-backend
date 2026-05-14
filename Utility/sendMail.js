@@ -6,11 +6,16 @@ export const sendPasswordResetMail = async (email, userId, token) => {
   const link = `https://pswd-reset.netlify.app/reset-password/${userId}/${token}`;
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.ADMIN_EMAIL,
       pass: process.env.PASSWORD,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
   const mailOptions = {
@@ -31,5 +36,9 @@ export const sendPasswordResetMail = async (email, userId, token) => {
         `,
   };
 
-  return await transporter.sendMail(mailOptions);
+  const info = await transporter.sendMail(mailOptions);
+
+  console.log("Mail sent:", info.messageId);
+
+  return info;
 };
