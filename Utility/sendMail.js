@@ -7,15 +7,16 @@ export const sendPasswordResetMail = async (email, userId, token) => {
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false,
+    requireTLS: true,
     auth: {
       user: process.env.ADMIN_EMAIL,
       pass: process.env.PASSWORD,
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 
   const mailOptions = {
@@ -36,9 +37,17 @@ export const sendPasswordResetMail = async (email, userId, token) => {
         `,
   };
 
-  const info = await transporter.sendMail(mailOptions);
+  await transporter.verify();
+  console.log("SMTP connected");
 
-  console.log("Mail sent:", info.messageId);
+  try {
+    const info = await transporter.sendMail(mailOptions);
 
-  return info;
+    console.log("Mail sent:", info.messageId);
+
+    return info;
+  } catch (error) {
+    console.error("MAIL ERROR:", error);
+    throw error;
+  }
 };
